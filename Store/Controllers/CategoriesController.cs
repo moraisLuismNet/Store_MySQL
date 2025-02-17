@@ -3,6 +3,7 @@ using Store.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Store.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Store.Controllers
 {
@@ -208,6 +209,32 @@ namespace Store.Controllers
             return Ok(category);
         }
 
+        [HttpGet("stored_procedure/{id:int}")]
+        public async Task<ActionResult<Category>> GetStoredProcedure(int id)
+        {
+            try
+            {
+                await _actionsService.AddAction("Getting Categories with a Stored Procedure", "Categories");
+
+                var categories = _context.Categories
+                    .FromSqlInterpolated($"EXEC Categories_GetById {id}")
+                    .IgnoreQueryFilters()
+                    .AsAsyncEnumerable();
+
+                await foreach (var category in categories)
+                {
+                    return category;
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, innerException = ex.InnerException?.Message });
+            }
+        }
+
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult> PostCategory(CategoryInsertDTO category)
         {
@@ -222,6 +249,47 @@ namespace Store.Controllers
             return Created("Category", new { category = newCategory });
         }
 
+        [Authorize]
+        [HttpPost("stored_procedure")]
+        public async Task<ActionResult> PostStoredProcedure(CategoryInsertDTO category)
+        {
+            try
+            {
+                using var connection = _context.Database.GetDbConnection();
+                await connection.OpenAsync();
+
+                using var command = connection.CreateCommand();
+                command.CommandText = "EXEC Categories_Insert @categoryName, @id OUTPUT";
+                command.CommandType = System.Data.CommandType.Text;
+
+                // Input parameter
+                var paramName = command.CreateParameter();
+                paramName.ParameterName = "@categoryName";
+                paramName.Value = category.NameCategory;
+                paramName.DbType = System.Data.DbType.String;
+                command.Parameters.Add(paramName);
+
+                // Output parameter
+                var paramId = command.CreateParameter();
+                paramId.ParameterName = "@id";
+                paramId.DbType = System.Data.DbType.Int32;
+                paramId.Direction = System.Data.ParameterDirection.Output;
+                command.Parameters.Add(paramId);
+
+                await command.ExecuteNonQueryAsync();
+
+                // Get the generated ID
+                var id = (paramId.Value != DBNull.Value) ? (int)paramId.Value : 0;
+
+                return Ok(id);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message, innerException = ex.InnerException?.Message });
+            }
+        }
+
+        [Authorize]
         [HttpPut("{idCategory:int}")]
         public async Task<IActionResult> PutCategory(int idCategory, [FromBody] CategoryUpdateDTO category)
         {
@@ -257,6 +325,7 @@ namespace Store.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("{id:int}")]
         public async Task<ActionResult> Delete(int id)
         {
