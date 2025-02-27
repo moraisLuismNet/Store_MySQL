@@ -111,7 +111,7 @@ app.UseCors();
 
 app.UseAuthorization();
 
-app.UseMiddleware<RegisterAndControlMiddleware>();
+//app.UseMiddleware<RegisterAndControlMiddleware>();
 
 app.MapControllers();
 

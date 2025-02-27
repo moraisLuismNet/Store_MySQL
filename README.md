@@ -1,19 +1,25 @@
-## Store
+## Store_MySQL
 ASP.NET Core Web API Store
 
-![Store](img/Store.png)
+![Store](img/1.png)
+![Store](img/2.png)
+
+
+## Program
+``` 
+var connectionString = builder.Configuration.GetConnectionString("Connection");
+
+builder.Services.AddDbContext<StoreContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 31)));
+);
+``` 
+
 
 ## appsetting.Development.json
 ``` 
 {
-    "ConnectionStrings": {
-        "Connection": "Data Source=W11P0rt;Initial Catalog=Store;Integrated Security=True;Encrypt=False"
-    },
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
-        }
-    }
+  "ConnectionStrings": {
+    "Connection": "Server=localhost;Port=3306;Database=store;User=root;Password=root"
+  }
 }
 ``` 

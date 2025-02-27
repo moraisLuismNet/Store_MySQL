@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Store.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Store.Controllers
 {
@@ -15,7 +15,8 @@ namespace Store.Controllers
         {
             _context = context;
         }
-        // GET: api/Actions
+
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult> GetActions()
         {
