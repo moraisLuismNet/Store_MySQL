@@ -47,9 +47,7 @@ Store_MySQL/
 │   ├───GroupFileType.cs  
 │   ├───ValidationFileType.cs  
 │   └───WeightFileValidation.cs  
-├───appsettings.Development.json  
 ├───appsettings.json  
-├───Dockerfile  
 └───Program.cs  
 
 
